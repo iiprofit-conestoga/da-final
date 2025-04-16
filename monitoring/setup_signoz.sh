@@ -11,13 +11,16 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
+# Get the directory where the script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # Create directory for SignOz
 mkdir -p ~/signoz
 cd ~/signoz
 
 # Create OpenTelemetry collector configuration
 echo "Creating OpenTelemetry collector configuration..."
-../monitoring/create_otel_config.sh
+bash "$SCRIPT_DIR/create_otel_config.sh"
 
 # Download SignOz Docker Compose file
 echo "Downloading SignOz Docker Compose file..."
@@ -111,7 +114,7 @@ sleep 30
 mkdir -p ~/signoz/config
 
 # Copy the configuration file
-cp ../monitoring/signoz_config.yaml ~/signoz/config/
+cp "$SCRIPT_DIR/signoz_config.yaml" ~/signoz/config/
 
 # Apply MySQL configuration
 echo "Applying MySQL configuration..."
@@ -120,7 +123,7 @@ docker cp ~/signoz/config/signoz_config.yaml signoz-query-service:/etc/signoz/co
 
 # Enable MySQL logging
 echo "Enabling MySQL logging..."
-mysql -h $DB_HOST -u $DB_USER -p$MYSQL_ROOT_PASSWORD < ../monitoring/enable_mysql_logging.sql
+mysql -h $DB_HOST -u $DB_USER -p$MYSQL_ROOT_PASSWORD < "$SCRIPT_DIR/enable_mysql_logging.sql"
 
 echo "SignOz setup complete!"
 echo "Access SignOz dashboard at: http://localhost:3301"
