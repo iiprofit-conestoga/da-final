@@ -6,9 +6,9 @@ import random
 
 # Database configuration
 DB_CONFIG = {
-    'host': 'localhost',
+    'host': '185.239.208.33',
     'user': 'root',
-    'password': 'your_password',
+    'password': 'Capstone_2025',
     'database': 'project_db'
 }
 
