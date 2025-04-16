@@ -23,6 +23,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install mysql-connector-python
 
+    - name: Cleanup Database
+      run: |
+        mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER }} -p${{ secrets.MYSQL_ROOT_PASSWORD }} < sql/00_cleanup.sql
+
     - name: Execute Initial Schema
       run: |
         mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER }} -p${{ secrets.MYSQL_ROOT_PASSWORD }} < sql/01_initial_schema.sql
