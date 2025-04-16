@@ -1,0 +1,90 @@
+version: '1.0'
+
+# SignOz Configuration for MySQL Monitoring
+service:
+  name: automated-mysql-server
+  type: mysql
+
+# MySQL Connection Details
+mysql:
+  host: ${DB_HOST}
+  port: 3306
+  user: ${DB_USER}
+  password: ${MYSQL_ROOT_PASSWORD}
+  database: ${DB_NAME}
+
+# Log Collection
+logs:
+  - name: mysql-error
+    type: file
+    path: /var/log/mysql/error.log
+    parser: mysql-error
+  
+  - name: mysql-slow-query
+    type: file
+    path: /var/log/mysql/slow-query.log
+    parser: mysql-slow-query
+
+# Metrics Collection
+metrics:
+  - name: cpu_usage
+    type: gauge
+    description: "CPU usage percentage"
+    query: "SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME='Threads_running'"
+  
+  - name: dtu_consumption
+    type: gauge
+    description: "DTU consumption percentage"
+    query: "SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME='Bytes_received'"
+  
+  - name: query_performance
+    type: histogram
+    description: "Query execution time in milliseconds"
+    query: "SELECT AVG(TIMER_WAIT)/1000000000 FROM performance_schema.events_statements_history WHERE EVENT_NAME LIKE 'statement/sql/%'"
+  
+  - name: connection_failures
+    type: counter
+    description: "Number of connection failures"
+    query: "SELECT VARIABLE_VALUE FROM performance_schema.global_status WHERE VARIABLE_NAME='Connection_errors_total'"
+
+# Alerts Configuration
+alerts:
+  - name: high_cpu_usage
+    condition: "cpu_usage > 80"
+    duration: "5m"
+    severity: critical
+    description: "CPU usage is above 80% for 5 minutes"
+    notification:
+      type: email
+      recipients:
+        - admin@example.com
+  
+  - name: high_dtu_consumption
+    condition: "dtu_consumption > 70"
+    duration: "5m"
+    severity: warning
+    description: "DTU consumption is above 70% for 5 minutes"
+    notification:
+      type: email
+      recipients:
+        - admin@example.com
+  
+  - name: long_running_queries
+    condition: "query_performance > 1000"
+    duration: "1m"
+    severity: critical
+    description: "Queries are taking longer than 1 second to execute"
+    notification:
+      type: email
+      recipients:
+        - admin@example.com
+  
+  - name: connection_failures
+    condition: "connection_failures > 5"
+    duration: "5m"
+    severity: critical
+    description: "More than 5 connection failures in 5 minutes"
+    notification:
+      type: email
+      recipients:
+        - admin@example.com 
