@@ -8,6 +8,12 @@ This directory contains configuration files and scripts for setting up advanced 
 - `enable_mysql_logging.sql`: SQL script to enable MySQL slow query logging and performance schema
 - `setup_signoz.sh`: Shell script to install and configure SignOz
 
+## Prerequisites
+
+- Docker Desktop installed and running
+- MySQL client installed
+- Access to the remote MySQL server
+
 ## Setup Instructions
 
 1. Make the setup script executable:
@@ -15,12 +21,14 @@ This directory contains configuration files and scripts for setting up advanced 
    chmod +x monitoring/setup_signoz.sh
    ```
 
-2. Run the setup script:
+2. Ensure Docker Desktop is running on your Mac
+
+3. Run the setup script:
    ```bash
    ./monitoring/setup_signoz.sh
    ```
 
-3. Access the SignOz dashboard at http://localhost:3301
+4. Access the SignOz dashboard at http://localhost:3301
    - Default credentials: admin / admin
 
 ## Monitoring Features
@@ -98,10 +106,11 @@ Alerts are configured to trigger notifications for:
 
 If you encounter issues with the SignOz setup:
 
-1. Check Docker and Docker Compose installation
-2. Verify MySQL connection details in `signoz_config.yaml`
-3. Ensure MySQL slow query logging and performance schema are enabled
-4. Check SignOz logs for errors:
+1. Ensure Docker Desktop is running
+2. Check Docker logs:
    ```bash
    docker logs signoz-query-service
-   ``` 
+   ```
+3. Verify MySQL connection details in `signoz_config.yaml`
+4. Ensure MySQL slow query logging and performance schema are enabled
+5. If you see "connection refused" errors, make sure the MySQL server is accessible from your machine 
