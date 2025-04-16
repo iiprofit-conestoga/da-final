@@ -9,16 +9,6 @@ on:
 jobs:
   database-deployment:
     runs-on: ubuntu-latest
-    
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE: project_db
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
     - uses: actions/checkout@v2
@@ -35,26 +25,29 @@ jobs:
 
     - name: Execute Initial Schema
       run: |
-        mysql -h 127.0.0.1 -P 3306 -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} < sql/01_initial_schema.sql
+        mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER }} -p${{ secrets.MYSQL_ROOT_PASSWORD }} < sql/01_initial_schema.sql
 
     - name: Execute Schema Update
       run: |
-        mysql -h 127.0.0.1 -P 3306 -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} < sql/02_schema_update.sql
+        mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER }} -p${{ secrets.MYSQL_ROOT_PASSWORD }} < sql/02_schema_update.sql
 
     - name: Seed Sample Data
       run: |
-        mysql -h 127.0.0.1 -P 3306 -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} < sql/03_sample_data.sql
+        mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER }} -p${{ secrets.MYSQL_ROOT_PASSWORD }} < sql/03_sample_data.sql
 
     - name: Run Concurrent Queries
       env:
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
         DB_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        DB_NAME: ${{ secrets.DB_NAME }}
       run: |
         python scripts/multi_thread_queries.py
 
     - name: Validate Deployment
       run: |
-        mysql -h 127.0.0.1 -P 3306 -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} -e "
-          USE project_db;
+        mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER }} -p${{ secrets.MYSQL_ROOT_PASSWORD }} -e "
+          USE ${{ secrets.DB_NAME }};
           SELECT COUNT(*) FROM ClimateData;
           DESCRIBE ClimateData;
         " 
